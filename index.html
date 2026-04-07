@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>CoC地雷チェックシート（6分割版）</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --sheet-bg: #ffffff;
+            --accent-color: #333;
+        }
+        body { font-family: sans-serif; background: var(--bg-color); color: var(--accent-color); padding: 20px; }
+        .controls { margin-bottom: 20px; text-align: center; background: #fff; padding: 20px; border-radius: 8px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* 各ページのスタイル */
+        .sheet-page {
+            width: 900px;
+            margin: 0 auto 40px auto;
+            background: var(--sheet-bg);
+            padding: 40px;
+            border: 1px solid #ddd;
+        }
+        h1 { text-align: center; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; font-size: 24px; }
+        .page-number { text-align: right; font-size: 12px; color: #999; margin-bottom: 5px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; font-size: 13px; }
+        th { background: #eee; }
+        .item-name { width: 35%; font-weight: bold; }
+        .check-group { width: 30%; text-align: center; }
+        .pref-group { width: 35%; text-align: center; }
+        
+        label { cursor: pointer; display: inline-block; padding: 2px 4px; border-radius: 4px; }
+        label:hover { background: #f0f0f0; }
+        
+        textarea { width: 100%; height: 100px; border: 1px solid #ccc; font-family: inherit; resize: none; margin-top: 10px; }
+        .footer-note { margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
+        
+        .btn-download {
+            background: #2a9d8f; color: white; border: none; padding: 12px 24px;
+            font-size: 18px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: bold;
+        }
+        .btn-download:hover { background: #264653; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3>クトゥルフ神話TRPG地雷チェックシート（6分割版）</h3>
+    <p>全項目を入力後、下のボタンを押してください。ブラウザが6枚の画像を順に保存します。</p>
+    <button class="btn-download" onclick="downloadAllPages()">📸 6枚まとめて保存する</button>
+</div>
+
+<div id="pages-container"></div>
+
+<script>
+    const items = ["グロテスクな描写", "グロテスクな音声", "グロテスクな画像", "ホラー要素の多い描写", "ホラー要素の多い音声", "ホラー要素の多い画像", "びっくり系の演出（ジャンプスケア）", "いじめの表現", "性行為等の性的描写", "痴漢/強姦などの性暴力描写", "嘔吐描写", "排泄描写", "言語未発達の幼児への残虐描写", "言語が扱える小学校入学前のキャラへの残虐描写", "小学生のキャラへの残虐描写", "18歳未満のキャラへの残虐描写", "18歳未満のキャラが犯罪を行う描写", "人間以外の動物に対する残虐描写", "自PCと血が繋がっているキャラから恋愛感情を持たれる", "自PCと書面もしくは認識上で家族とされるキャラから恋愛感情を持たれる", "同卓PCと血が繋がっているキャラが恋愛関係にある", "自PC、同卓PCには関係性がない近親相姦", "妊娠描写", "男キャラの妊娠描写", "堕胎描写", "男キャラの堕胎描写", "シナリオ内での性転換", "期限付き後遺症の性転換", "永続の性転換", "同性愛", "下ネタ", "特殊性癖", "自殺表現", "薬物", "カニバリズム", "精神病", "発達障害", "実在の病気", "実在の事件", "実在の宗教", "実在の人物（偉人等）", "実在の人物（犯罪者等）", "現実にあった戦争（経験者が亡くなられている）", "現実にあった戦争（経験者が存命）", "現実にある戦争", "現実にない戦争", "自然災害", "男尊女卑/女尊男卑", "集合体の画像", "虫の音声", "虫の画像", "虫の描写", "自PCと恋愛関係にある相手を寝取られる", "自PCが当て馬になる", "リアルアイデアに成功しないと先に進めないイベント", "リアルアイデアに成功しないとバッドエンド", "作者の脳内当てが必要", "リアルタイムで時間制限がある", "PvP（PCの意思によるもの）", "PvP（洗脳や発狂によるもの）", "PLのINTが必要な謎解きなどのひらめきが要る要素", "PL de EDUが必要", "シナリオ独自のルールがある", "シナリオの本筋には関係ない茶番用イベント", "時系列や設定に矛盾があり、整合性に欠けるストーリー", "NPCの行動理念があやふやな展開", "PLに罠を仕掛ける展開", "極端に描写例が少なく、KP,PLに依存するシナリオ", "確定で負けイベが発生する", "NPCが活躍しすぎてPCの存在意義が薄れる展開", "トロッコ問題のような選択を自PCに投げられる", "自PCの確定ロスト", "他PCの確定ロスト", "新規KPCの確定ロスト", "継続KPCの確定ロスト", "全生還が不可能", "救済不可の永久ロストの可能性がある", "確定で自PCに余命が決められる", "自PCに余命が決められる可能性がある", "確定で継続可否に関わる後遺症が自PCにつく", "継続可だが世界の滅亡等の可能性がある", "ヒントや忠告がない即死トラップ", "終盤で死にやすい高ロスト", "序盤や中盤も死にやすい高ロスト", "神話的事象の独自解釈", "極端にクトゥルフ要素が少ない", "パラレルワールド", "軽度のメタフィクション要素がある", "シナリオの根幹にメタフィクション要素がある", "子供RPを強制させられる", "サイコパスRPを強制させられる", "暴力/虐待/いじめRPを強制させられる", "エモRPを強制させられる", "自PCとは異性のキャラに対して恋愛RPを強制させられる", "自PCと同性のキャラに対して恋愛RPを強制させられる", "性的なRPを強制させられる", "自PCに犯罪歴がつく", "自PCによるいじめが行われる", "自PCによる動物虐待が行われる", "自PCによる児童虐待が行われる", "自PCによる性的な暴力が行われる", "自PCによる猟奇事件が行われる", "自PCが自殺衝動を持っている", "自PCが殺人衝動を持っている", "自PCが拷問をする", "自PCがハラスメント行為をする", "自PCが既に死んでいる", "自PCが人間ではない", "自PCが他PCへ糾弾する", "自PCが確定で発狂するシーンがある", "自PCが自覚がないまま発狂している", "自PCと他PC間で性的接触がある/あった", "自PCとNPC間で性的接触がある/あった", "自PCに無関係なところ（NPCと他PC）で性的接触がある/あった", "異性NPCに対して恋愛感情を持つ", "異性PCに対して恋愛感情を持つ", "同性NPCに対して恋愛感情を持つ", "同性PCに対して恋愛感情を持つ", "自PCがNPCを殺害する必要がある", "自PCがクローン等本人ではない", "同卓PCやKPCがクローン等本人ではない", "シナリオ描写によって自PCの感情を指定/強制される", "シナリオ描写によって自PCの行動を指定/強制される", "神話的事象によって自PCの感情を指定/強制される", "自PCの口調や話し方を強制される", "交渉等の場面で技能判定ではなくRPで進めなければならない", "人間ができるレベルの特殊技能や特殊能力を持っている", "人間ができないレベルの特殊能力を持っている", "自PCがいじめを受ける", "自PCが虐待を受ける", "自PCが性的な暴力を受ける", "自PCのペットに対する残虐描写が入る", "自PCが拷問を受ける", "自PCがハラスメント行為を受ける", "自PCが他PCから糾弾される", "PC内で1対多/ハブにされるような展開がある", "自PCが記憶を失う", "自PCが異性NPCに恋愛感情を持たれる", "自PCが同性NPCに恋愛感情を持たれる", "自PCが異性の他PCに恋愛感情を持たれる", "自PCが同性の他PCに恋愛感情を持たれる", "夢オチエンディング", "続編を匂わせるオチ", "メタフィクションが関わるエンディング", "パラレルワールド/別世界線へ行く", "自PCの記憶が消えるエンディング", "秘匿内で自PCが記憶喪失であるという指定がある", "自PCが自覚なしに記憶を改ざんされている", "特定のHOのみ情報量や行動が多い", "特定のHOの行動が全体のロストやシナリオのエンド分岐に直結する", "秘匿内で自PCが他PCへの敵意を抱いているという指定がある", "極端に自由度の低いHO", "シナリオ中に特殊な能力や技能を使う場面が用意されている", "秘匿内で性別が指定されている", "秘匿内で年齢が指定されている", "秘匿内で外見が指定されている", "秘匿内で性格が指定されている", "秘匿と公言されていないシナリオで突然秘匿が飛んでくる", "セッションの録画", "セッションの見学", "PL発言の多用", "同卓者の自主ロスト", "シナリオ内で事前情報扱いではない情報の事前伝達", "極端にロスト率が上がる場合の助言", "未公開の推奨技能/能力値の伝達", "地雷回避のための事前情報提供"];
+
+    const pagesContainer = document.getElementById('pages-container');
+    const itemsPerPage = Math.ceil(items.length / 6); // 1ページあたりの項目数
+
+    for (let i = 0; i < 6; i++) {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'sheet-page';
+        pageDiv.id = `page-${i}`;
+        
+        let html = `<div class="page-number">Page ${i + 1} / 6</div>`;
+        html += `<h1>CoC地雷チェックシート</h1>`;
+        html += `<table><thead><tr><th>項目</th><th>告知希望</th><th>スタンス</th></tr></thead><tbody>`;
+        
+        const start = i * itemsPerPage;
+        const end = Math.min(start + itemsPerPage, items.length);
+        
+        for (let j = start; j < end; j++) {
+            html += `
+                <tr>
+                    <td class="item-name">${items[j]}</td>
+                    <td class="check-group">
+                        <label><input type="checkbox">事前</label>
+                        <label><input type="checkbox">直前</label>
+                    </td>
+                    <td class="pref-group">
+                        <label><input type="radio" name="pref_${j}" value="1" onclick="toggleRadio(this)">不可</label>
+                        <label><input type="radio" name="pref_${j}" value="2" onclick="toggleRadio(this)">不快</label>
+                        <label><input type="radio" name="pref_${j}" value="3" onclick="toggleRadio(this)">好き</label>
+                    </td>
+                </tr>`;
+        }
+        html += `</tbody></table>`;
+        
+        // 最後のページにだけ自由記述欄を追加
+        if (i === 5) {
+            html += `
+            <div class="footer-note">
+                <h3>プレイヤー補足欄</h3>
+                <textarea placeholder="個別の補足..."></textarea>
+            </div>
+            <div class="footer-note">
+                <h3>その他自由記述</h3>
+                <textarea placeholder="上記以外の事項..."></textarea>
+            </div>`;
+        }
+        
+        pageDiv.innerHTML = html;
+        pagesContainer.appendChild(pageDiv);
+    }
+
+    function toggleRadio(radio) {
+        if (radio.dataset.checked === "true") {
+            radio.checked = false;
+            radio.dataset.checked = "false";
+        } else {
+            const name = radio.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.dataset.checked = "false");
+            radio.dataset.checked = "true";
+        }
+    }
+
+    async function downloadAllPages() {
+        const btn = document.querySelector('.btn-download');
+        btn.innerText = "生成中...";
+        btn.disabled = true;
+
+        for (let i = 0; i < 6; i++) {
+            const canvas = await html2canvas(document.getElementById(`page-${i}`), { scale: 2 });
+            const link = document.createElement('a');
+            link.download = `CoC地雷チェック_${i + 1}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            // 連続ダウンロードでブラウザが止まらないよう少し待機
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        btn.innerText = "📸 6枚まとめて保存する";
+        btn.disabled = false;
+    }
+</script>
+</body>
+</html>
